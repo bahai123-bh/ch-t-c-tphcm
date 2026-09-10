@@ -6,535 +6,517 @@
     <title>Chợ Điện Thoại Cũ — TPHCM</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module">
-        // ====== FIREBASE CONFIG ======
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyDvfVuaTYGeX5k3wMvAY-BVDi2x69xRtKI",
-            authDomain: "cho-dien-thoai-cu.firebaseapp.com",
-            projectId: "cho-dien-thoai-cu",
-            storageBucket: "cho-dien-thoai-cu.firebasestorage.app",
-            messagingSenderId: "462484690943",
-            appId: "1:462484690943:web:32bec4d5febc4bd00bf9ca",
-            measurementId: "G-FK19SPX0M4"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
-        window.db = getFirestore(app);
-    </script>
     <style>
         * { -webkit-tap-highlight-color: transparent; }
-        .online-dot { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        .chip-quan::-webkit-scrollbar { display: none; }
-        .chip-quan { -ms-overflow-style: none; scrollbar-width: none; }
-        .quan-chip-active { background: #3b82f6 !important; color: white !important; }
-        .code-box { letter-spacing: 0.5em; font-weight: 700; font-size: 1.5rem; }
-        body { background: #f8fafc; padding-bottom: 100px; }
-        .stat-card { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
-        input, select, textarea { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; width: 100%; margin-bottom: 10px; }
+        .chip-active { background: #2563eb !important; color: white !important; }
+        .modal-backdrop { background: rgba(0,0,0,0.5); }
+        .code-box { letter-spacing: 0.25em; font-family: monospace; }
+        .phuong-item:hover { background: #e5e7eb; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 max-w-md mx-auto min-h-screen">
 
 <!-- ====== HEADER ====== -->
-<header class="bg-white px-4 py-4 sticky top-0 z-40 shadow-sm">
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2">
-            📱 Chợ ĐT Cũ TPHCM
-        </h1>
-        <div class="flex items-center gap-1.5 bg-green-500 text-white px-4 py-2 rounded-full shadow-sm">
-            <span class="w-2.5 h-2.5 bg-white rounded-full online-dot"></span>
-            <span id="online-count" class="text-sm font-semibold">137 online</span>
+<header class="bg-white shadow-sm sticky top-0 z-40 px-4 py-3">
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">📱</span>
+            <h1 class="text-lg font-bold text-blue-600">Chợ ĐT Cũ TPHCM</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="statusOnline" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">● Online</span>
+            <button id="btnProfile" class="text-sm font-medium text-gray-600">Đăng nhập</button>
         </div>
     </div>
-    <div class="relative mb-4">
-        <input type="text" id="search-input" placeholder="🔍 Tìm theo Quận, Phường, tên cửa hàng..." 
-            class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
-    </div>
-
-    <p class="text-sm font-medium text-gray-600 mb-2">Chọn Quận:</p>
-    <div class="overflow-x-auto chip-quan pb-2">
-        <div class="flex gap-2 whitespace-nowrap" id="quan-chips">
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="all">Tất cả</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 1">Q.1</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 3">Q.3</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 4">Q.4</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 5">Q.5</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 6">Q.6</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 7">Q.7</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 8">Q.8</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 10">Q.10</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 11">Q.11</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Quận 12">Q.12</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Bình Thạnh">Bình Thạnh</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Bình Tân">Bình Tân</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Tân Bình">Tân Bình</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Tân Phú">Tân Phú</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Gò Vấp">Gò Vấp</button>
-            <button class="quan-chip px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700" data-quan="Phú Nhuận">Phú Nhuận</button>
-        </div>
+    <div class="relative">
+        <input type="text" id="searchInput" placeholder="Tìm theo quận, phường..." 
+            class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 </header>
 
-<!-- ====== DANH SÁCH PHƯỜNG ====== -->
-<section class="px-4 py-3 bg-white border-b border-gray-100 hidden" id="phuong-section">
-    <p class="text-sm font-medium text-gray-600 mb-2">Chọn Phường:</p>
-    <div class="flex flex-wrap gap-2" id="phuong-list"></div>
+<!-- ====== CHIP QUẬN ====== -->
+<section class="px-3 py-3 overflow-x-auto">
+    <div id="districtChips" class="flex flex-wrap gap-2">
+        <!-- Điền bằng JS -->
+    </div>
 </section>
 
-<!-- ====== HƯỚNG DẪN ====== -->
-<section class="px-4 py-6" id="hint-section">
-    <p class="text-gray-500 text-center py-10 text-lg">👆 Chọn Quận → Phường để xem cửa hàng</p>
+<!-- ====== CHỌN PHƯỜNG ====== -->
+<section id="wardSection" class="px-4 pb-2 hidden">
+    <p class="text-sm font-medium text-gray-500 mb-2">Chọn Phường:</p>
+    <div id="wardList" class="grid grid-cols-3 gap-2 text-sm">
+        <!-- Điền bằng JS -->
+    </div>
 </section>
 
 <!-- ====== DANH SÁCH CỬA HÀNG ====== -->
-<section class="px-4 py-2 hidden" id="danh-sach-cua-hang">
-    <h2 class="text-sm font-semibold text-gray-500 mb-3">🏪 Danh sách cửa hàng <span id="total-shops" class="text-blue-600">(0 cửa hàng)</span></h2>
-    <div class="space-y-4" id="cua-hang-list"></div>
-</section>
-
-<!-- ====== NÚT LẤY MÃ GIẢM GIÁ + HỒ SƠ ====== -->
-<section class="fixed bottom-4 left-4 right-4 z-30">
-    <div class="flex gap-3">
-        <button id="voucher-main-btn" onclick="showVoucher()" 
-            class="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl text-lg font-bold shadow-lg transition">
-            🎫 Lấy mã giảm giá
-        </button>
-        <button id="profile-btn" onclick="showProfile()" 
-            class="w-20 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl text-xl shadow-lg transition flex items-center justify-center">
-            👤
-        </button>
+<section id="shopListSection" class="px-4 pb-20">
+    <h2 class="text-sm font-semibold text-gray-500 mb-3">🏪 Cửa hàng điện thoại cũ</h2>
+    <div id="shopList" class="space-y-4">
+        <!-- Điền bằng Supabase -->
     </div>
+    <p id="emptyMsg" class="text-center text-gray-400 py-10 hidden">Không có cửa hàng trong khu vực này</p>
 </section>
 
-<!-- ====== POPUP SỐ ĐIỆN THOẠI ====== -->
-<section id="phone-popup" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full text-center">
-        <h3 class="text-lg font-bold text-blue-600 mb-2">📞 Số điện thoại cửa hàng</h3>
-        <p id="phone-number" class="text-2xl font-bold text-gray-800 py-4">--------</p>
-        <button onclick="closePhonePopup()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-medium">Đóng</button>
-    </div>
-</section>
-
-<!-- ====== POPUP MÃ GIẢM GIÁ — ĐÃ BỎ NÚT SAO CHÉP ====== -->
-<section id="voucher-section" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full text-center">
-        <h3 class="text-lg font-bold text-green-600 mb-2">🎉 Mã Giảm Giá Của Bạn</h3>
-        <p class="text-sm text-gray-500 mb-4">Chụp màn hình → Dùng tại bất kỳ cửa hàng nào trên hệ thống</p>
-        <div class="bg-gray-100 rounded-xl py-4 px-6 mb-4">
-            <p id="discount-code" class="code-box text-blue-600">------</p>
+<!-- ====== MODAL MÃ GIẢM GIÁ ====== -->
+<div id="discountModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-backdrop absolute inset-0" onclick="closeDiscountModal()"></div>
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-xl">
+        <h3 class="text-lg font-bold text-center mb-4">🎁 Mã Giảm Giá Của Bạn</h3>
+        <div id="discountCodeBox" class="bg-gray-100 py-4 px-6 rounded-xl text-center mb-4">
+            <span id="discountCode" class="code-box text-2xl font-bold text-blue-600">------</span>
         </div>
-        <div class="bg-blue-50 rounded-xl p-4 mb-4 text-left text-sm">
-            <p class="font-bold text-blue-800 mb-2">💰 Bảng giảm giá:</p>
-            <p>• Hóa đơn trên 2tr → giảm <strong>100.000đ</strong></p>
-            <p>• Hóa đơn trên 3tr → giảm <strong>200.000đ</strong></p>
-            <p>• Hóa đơn trên 4tr → giảm <strong>300.000đ</strong></p>
-            <p>• Hóa đơn trên 5tr → giảm <strong>400.000đ</strong></p>
-            <p>• Hóa đơn trên 6tr → giảm <strong>500.000đ</strong></p>
-        </div>
-        <p class="text-sm text-orange-600 mb-4 font-medium">
-            🔥 <strong>Hướng dẫn bạn bè để họ cũng được giảm tới 500k khi mua điện thoại!</strong>
+        <p class="text-sm text-gray-600 text-center mb-3">
+            Hóa đơn trên 2tr → giảm 100k<br>
+            Trên 3tr → giảm 200k · Trên 4tr → giảm 300k<br>
+            Trên 5tr → giảm 400k · Trên 6tr → giảm 500k
         </p>
-        <!-- CHỈ GIỮ NÚT ĐÓNG — BỎ NÚT SAO CHÉP & CHIA SẺ -->
-        <button onclick="closeVoucher()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-medium">Đóng</button>
+        <p class="text-sm text-blue-600 text-center font-medium mb-5">
+            👉 Hướng dẫn bạn bè để họ cũng được giảm tới 500k khi mua điện thoại!
+        </p>
+        <button onclick="closeDiscountModal()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium">Đã hiểu</button>
+    </div>
+</div>
+
+<!-- ====== MODAL XEM SĐT ====== -->
+<div id="phoneModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-backdrop absolute inset-0" onclick="closePhoneModal()"></div>
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-xl">
+        <h3 class="text-lg font-bold text-center mb-4">📞 Số Điện Thoại</h3>
+        <p id="shopNamePhone" class="text-center text-gray-600 mb-2"></p>
+        <p id="phoneNumber" class="text-2xl font-bold text-blue-600 text-center mb-6">--</p>
+        <button onclick="closePhoneModal()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium">Đóng</button>
+    </div>
+</div>
+
+<!-- ====== MODAL ĐĂNG NHẬP ADMIN ====== -->
+<div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-backdrop absolute inset-0" onclick="closeLoginModal()"></div>
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-xl">
+        <h3 class="text-lg font-bold text-center mb-5">🔐 Đăng nhập quản trị</h3>
+        <input type="email" id="adminEmail" placeholder="Email quản trị" 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl mb-4 text-lg" value="dangbahai3@gmail.com">
+        <input type="password" id="adminPass" placeholder="Mật khẩu" 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl mb-5 text-lg">
+        <button onclick="adminLogin()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium mb-3">Đăng nhập</button>
+        <button onclick="closeLoginModal()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-medium">Đóng</button>
+    </div>
+</div>
+
+<!-- ====== TRANG QUẢN LÝ ADMIN ====== -->
+<section id="adminPanel" class="px-4 pb-20 hidden">
+    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+        <h2 class="text-lg font-bold mb-4">📊 Thống kê</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-3 rounded-xl text-center">
+                <p class="text-xs text-gray-500">Tổng cửa hàng</p>
+                <p id="totalShops" class="text-xl font-bold text-blue-600">0</p>
+            </div>
+            <div class="bg-green-50 p-3 rounded-xl text-center">
+                <p class="text-xs text-gray-500">Lượt xem SĐT</p>
+                <p id="totalPhoneViews" class="text-xl font-bold text-green-600">0</p>
+            </div>
+            <div class="bg-amber-50 p-3 rounded-xl text-center">
+                <p class="text-xs text-gray-500">Lượt lấy mã giảm giá</p>
+                <p id="totalDiscountViews" class="text-xl font-bold text-amber-600">0</p>
+            </div>
+            <div class="bg-purple-50 p-3 rounded-xl text-center">
+                <p class="text-xs text-gray-500">Đăng nhập</p>
+                <p class="text-sm font-bold text-purple-600">Admin</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+        <h2 class="text-lg font-bold mb-4">➕ Thêm / Sửa cửa hàng</h2>
+        <input type="text" id="shopName" placeholder="Tên cửa hàng" class="w-full px-3 py-2 border rounded-lg mb-2">
+        <input type="text" id="shopAddress" placeholder="Địa chỉ" class="w-full px-3 py-2 border rounded-lg mb-2">
+        <input type="text" id="shopPhone" placeholder="Số điện thoại" class="w-full px-3 py-2 border rounded-lg mb-2">
+        <select id="shopDistrict" class="w-full px-3 py-2 border rounded-lg mb-2">
+            <!-- Điền bằng JS -->
+        </select>
+        <select id="shopWard" class="w-full px-3 py-2 border rounded-lg mb-2">
+            <!-- Điền bằng JS -->
+        </select>
+        <input type="text" id="shopImage" placeholder="Link ảnh cửa hàng" class="w-full px-3 py-2 border rounded-lg mb-2">
+        <label class="flex items-center gap-2 mb-3">
+            <input type="checkbox" id="shopWarranty"> Có bảo hành
+        </label>
+        <button onclick="saveShop()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium">💾 Lưu cửa hàng</button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-4">
+        <h2 class="text-lg font-bold mb-4">🏪 Danh sách cửa hàng</h2>
+        <div id="adminShopList" class="space-y-3">
+            <!-- Điền bằng Supabase -->
+        </div>
     </div>
 </section>
 
-<!-- ====== POPUP HỒ SƠ / ADMIN ====== -->
-<section id="profile-popup" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full max-h-[85vh] overflow-y-auto">
-        <h3 id="profile-title" class="text-lg font-bold text-center text-blue-600 mb-4">🔐 Đăng nhập Admin</h3>
-        
-        <div id="admin-login-form">
-            <input type="email" id="admin-email" placeholder="Email đăng nhập" class="w-full">
-            <input type="password" id="admin-pass" placeholder="Mật khẩu" class="w-full">
-            <button onclick="adminLogin()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium mb-3">Đăng nhập</button>
-            <p class="text-xs text-gray-500 text-center">Chỉ Admin mới có thể đăng nhập</p>
-        </div>
-
-        <div id="admin-dashboard" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-purple-600">📊 Bảng Quản Lý</h3>
-                <button onclick="adminLogout()" class="text-sm text-red-500">Thoát</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="stat-card rounded-xl p-3 text-center">
-                    <p class="text-xs text-gray-500">Tổng cửa hàng</p>
-                    <p id="stat-total-shops" class="font-bold text-blue-600 text-lg">0</p>
-                </div>
-                <div class="stat-card rounded-xl p-3 text-center">
-                    <p class="text-xs text-gray-500">Tổng lượt xem SĐT</p>
-                    <p id="stat-total-phone" class="font-bold text-green-600 text-lg">0</p>
-                </div>
-                <div class="stat-card rounded-xl p-3 text-center col-span-2">
-                    <p class="text-xs text-gray-500">Tổng lượt lấy mã giảm giá</p>
-                    <p id="stat-total-voucher" class="font-bold text-orange-600 text-lg">0</p>
-                </div>
-            </div>
-
-            <button onclick="showAddShopForm()" class="w-full bg-green-500 text-white py-3 rounded-xl font-medium mb-4">➕ Thêm cửa hàng mới</button>
-
-            <div id="shop-form" class="hidden bg-gray-50 p-4 rounded-xl mb-4">
-                <h4 id="shop-form-title" class="font-bold mb-3">Thêm cửa hàng</h4>
-                <input type="text" id="shop-id" hidden>
-                <input type="text" id="shop-name" placeholder="Tên cửa hàng *" required>
-                <select id="shop-quan" class="w-full mb-2">
-                    <option value="">Chọn Quận *</option>
-                    <option>Quận 1</option><option>Quận 3</option><option>Quận 4</option><option>Quận 5</option>
-                    <option>Quận 6</option><option>Quận 7</option><option>Quận 8</option><option>Quận 10</option>
-                    <option>Quận 11</option><option>Quận 12</option><option>Bình Thạnh</option><option>Bình Tân</option>
-                    <option>Tân Bình</option><option>Tân Phú</option><option>Gò Vấp</option><option>Phú Nhuận</option>
-                </select>
-                <input type="text" id="shop-phuong" placeholder="Tên Phường *" required>
-                <input type="text" id="shop-address" placeholder="Địa chỉ chi tiết">
-                <input type="tel" id="shop-phone" placeholder="Số điện thoại *" required>
-                <input type="text" id="shop-image" placeholder="Link ảnh cửa hàng">
-                <div class="flex gap-2 mt-2">
-                    <button onclick="saveShop()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg">Lưu</button>
-                    <button onclick="hideShopForm()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Hủy</button>
-                </div>
-            </div>
-
-            <h4 class="font-bold text-sm text-gray-600 mb-2">🏪 Quản lý cửa hàng</h4>
-            <div id="admin-shop-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
-        </div>
-
-        <button onclick="closeProfilePopup()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-medium mt-4">Đóng</button>
-    </div>
-</section>
-
-<!-- ====== JAVASCRIPT ====== -->
+<!-- ====== IMPORT SUPABASE ====== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
-    // ==== DỮ LIỆU 16 QUẬN + 66 PHƯỜNG ====
-    const dataQuanPhuong = {
-        "Quận 1": ["Phường Sài Gòn", "Phường Bến Thành", "Phường Cầu Ông Lãnh", "Phường Tân Định"],
-        "Quận 3": ["Phường Bàn Cờ", "Phường Xuân Hòa", "Phường Nhiều Lộc"],
-        "Quận 4": ["Phường Xóm Chiếu", "Phường Khánh Hội", "Phường Vĩnh Hội"],
-        "Quận 5": ["Phường Chợ Quán", "Phường An Đông", "Phường Chợ Lớn"],
-        "Quận 6": ["Phường Bình Tây", "Phường Bình Tiến", "Phường Bình Phú", "Phường Phú Lâm"],
-        "Quận 7": ["Phường Tân Thuận", "Phường Phú Thuận", "Phường Tân Hưng"],
-        "Quận 8": ["Phường Chánh Hưng", "Phường Phú Định", "Phường Bình Đông"],
-        "Quận 10": ["Phường Vườn Lài", "Phường Diên Hồng", "Phường Hòa Hưng"],
-        "Quận 11": ["Phường Hòa Bình", "Phường Phú Thọ", "Phường Bình Thới", "Phường Minh Phụng"],
-        "Quận 12": ["Phường Đông Hưng Thuận", "Phường Trung Mỹ Tây", "Phường Tân Thới Hiệp", "Phường Thới An", "Phường An Phú Đông"],
-        "Bình Thạnh": ["Phường Gia Định", "Phường Bình Thạnh", "Phường Bình Lợi Trung", "Phường Bình Quới", "Phường Thạnh Mỹ Tây"],
-        "Bình Tân": ["Phường An Lạc", "Phường Bình Tân", "Phường Bình Hưng Hòa", "Phường Bình Trị Đông", "Phường Tân Tạo"],
-        "Tân Bình": ["Phường Tân Sơn Hòa", "Phường Tân Sơn Nhất", "Phường Tân Hòa", "Phường Bảy Hiền", "Phường Tân Sơn", "Phường Tân Bình"],
-        "Tân Phú": ["Phường Tây Thạnh", "Phường Tân Sơn Nhì", "Phường Phú Thọ Hòa", "Phường Tân Phú", "Phường Phú Thạnh"],
-        "Gò Vấp": ["Phường Hạnh Thông", "Phường An Nhơn", "Phường Gò Vấp", "Phường An Hội Đông", "Phường An Hội Tây", "Phường Thông Tây Hội"],
-        "Phú Nhuận": ["Phường Đức Nhuận", "Phường Cầu Kiệu", "Phường Phú Nhuận"]
-    };
+// ====== CONFIG SUPABASE ======
+const SUPABASE_URL = "https://dibnlilcicosdgpcwwji.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_xCNGRhF9A8zVwH0KUrZDAw_9-4eYOis";
 
-    const ADMIN_EMAIL = "dangbahai3@gmail.com";
-    let isAdmin = false;
-    let totalPhoneViews = 0;
-    let totalVoucherViews = 0;
-    let currentFilterQuan = "all";
-    let currentFilterPhuong = "all";
+// Khởi tạo Supabase
+const { createClient } = supabase;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ==== SỐ ONLINE NHẢY ====
-    function updateOnlineCount() {
-        document.getElementById('online-count').textContent = `${Math.floor(Math.random() * 101) + 100} online`;
-    }
-    updateOnlineCount();
-    setInterval(updateOnlineCount, 3000);
+// ====== DANH SÁCH QUẬN & PHƯỜNG — ĐÚNG 16 QUẬN, 66 PHƯỜNG ======
+const districts = [
+    { name: "Quận 1", wards: ["Phường Sài Gòn", "Phường Bến Thành", "Phường Cầu Ông Lãnh", "Phường Tân Định"] },
+    { name: "Quận 3", wards: ["Phường Bàn Cờ", "Phường Xuân Hòa", "Phường Nhiêu Lộc"] },
+    { name: "Quận 4", wards: ["Phường Xóm Chiếu", "Phường Khánh Hội", "Phường Vĩnh Hội"] },
+    { name: "Quận 5", wards: ["Phường Chợ Quán", "Phường An Đông", "Phường Chợ Lớn"] },
+    { name: "Quận 6", wards: ["Phường Bình Tây", "Phường Bình Tiên", "Phường Bình Phú", "Phường Phú Lâm"] },
+    { name: "Quận 7", wards: ["Phường Tân Thuận", "Phường Phú Thuận", "Phường Tân Hưng"] },
+    { name: "Quận 8", wards: ["Phường Chánh Hưng", "Phường Phú Định", "Phường Bình Đông"] },
+    { name: "Quận 10", wards: ["Phường Vườn Lài", "Phường Diên Hồng", "Phường Hòa Hưng"] },
+    { name: "Quận 11", wards: ["Phường Hòa Bình", "Phường Phú Thọ", "Phường Bình Thới", "Phường Minh Phụng"] },
+    { name: "Quận 12", wards: ["Phường Đông Hưng Thuận", "Phường Trung Mỹ Tây", "Phường Tân Thới Hiệp", "Phường Thới An", "Phường An Phú Đông"] },
+    { name: "Bình Thạnh", wards: ["Phường Gia Định", "Phường Bình Thạnh", "Phường Bình Lợi Trung", "Phường Bình Quới", "Phường Thạnh Mỹ Tây"] },
+    { name: "Bình Tân", wards: ["Phường An Lạc", "Phường Bình Tân", "Phường Bình Hưng Hòa", "Phường Bình Trị Đông", "Phường Tân Tạo"] },
+    { name: "Tân Bình", wards: ["Phường Tân Sơn Hòa", "Phường Tân Sơn Nhất", "Phường Tân Hòa", "Phường Bảy Hiền", "Phường Tân Sơn", "Phường Tân Bình"] },
+    { name: "Tân Phú", wards: ["Phường Tây Thạnh", "Phường Tân Sơn Nhì", "Phường Phú Thọ Hòa", "Phường Tân Phú", "Phường Phú Thạnh"] },
+    { name: "Gò Vấp", wards: ["Phường Hạnh Thông", "Phường An Nhơn", "Phường Gò Vấp", "Phường An Hội Đông", "Phường An Hội Tây", "Phường Thông Tây Hội"] },
+    { name: "Phú Nhuận", wards: ["Phường Đức Nhuận", "Phường Cầu Kiệu", "Phường Phú Nhuận"] }
+];
 
-    // ==== CHỌN QUẬN → PHƯỜNG ====
-    document.querySelectorAll('.quan-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            document.querySelectorAll('.quan-chip').forEach(c => c.classList.remove('quan-chip-active'));
-            chip.classList.add('quan-chip-active');
-            const quan = chip.dataset.quan;
-            currentFilterQuan = quan;
-            const phuongSection = document.getElementById('phuong-section');
-            const phuongList = document.getElementById('phuong-list');
-            const hintSection = document.getElementById('hint-section');
-            const cuaHangSection = document.getElementById('danh-sach-cua-hang');
+// ====== BIẾN TOÀN CỤC ======
+let selectedDistrict = null;
+let selectedWard = null;
+let isAdmin = false;
+let editingShopId = null;
 
-            if (quan === 'all') {
-                phuongSection.classList.add('hidden');
-                hintSection.classList.add('hidden');
-                cuaHangSection.classList.remove('hidden');
-                currentFilterPhuong = "all";
-                loadShops();
-            } else {
-                phuongSection.classList.remove('hidden');
-                phuongList.innerHTML = '';
-                currentFilterPhuong = "all";
-                const phuongs = dataQuanPhuong[quan] || [];
-                phuongs.forEach(phuong => {
-                    const span = document.createElement('span');
-                    span.className = 'px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm cursor-pointer hover:bg-blue-200 transition';
-                    span.textContent = phuong;
-                    span.addEventListener('click', () => {
-                        currentFilterPhuong = phuong;
-                        loadShops();
-                        document.querySelectorAll('#phuong-list span').forEach(s => s.classList.remove('bg-blue-500', 'text-white'));
-                        span.classList.add('bg-blue-500', 'text-white');
-                    });
-                    phuongList.appendChild(span);
-                });
-                hintSection.classList.add('hidden');
-                cuaHangSection.classList.remove('hidden');
-                loadShops();
-            }
-        });
-    });
-
-    // ==== TẠO MÃ GIẢM GIÁ 6 KÝ TỰ ====
-    function generateCode() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
-    }
-
-    // ==== HIỆN MÃ GIẢM GIÁ ====
-    function showVoucher() {
-        totalVoucherViews++;
-        document.getElementById('discount-code').textContent = generateCode();
-        document.getElementById('voucher-section').classList.remove('hidden');
-        updateStats();
-    }
-    function closeVoucher() {
-        document.getElementById('voucher-section').classList.add('hidden');
-    }
-
-    // ==== XEM SỐ ĐIỆN THOẠI ====
-    async function showPhoneNumber(shopId, phone) {
-        totalPhoneViews++;
-        document.getElementById('phone-number').textContent = phone;
-        document.getElementById('phone-popup').classList.remove('hidden');
-        try {
-            const shopRef = doc(window.db, "shops", shopId);
-            const shopSnap = await getDoc(shopRef);
-            if (shopSnap.exists()) {
-                const currentViews = shopSnap.data().phoneViews || 0;
-                await updateDoc(shopRef, { phoneViews: currentViews + 1 });
-            }
-        } catch(e) {}
-        updateStats();
-    }
-    function closePhonePopup() {
-        document.getElementById('phone-popup').classList.add('hidden');
-    }
-
-    // ==== HỒ SƠ / ADMIN ====
-    function showProfile() {
-        if (isAdmin) {
-            document.getElementById('profile-title').textContent = "📊 Quản lý Admin";
-            document.getElementById('admin-login-form').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-            loadAdminShops();
-            updateStats();
-        } else {
-            document.getElementById('profile-title').textContent = "🔐 Đăng nhập Admin";
-            document.getElementById('admin-login-form').classList.remove('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
-        }
-        document.getElementById('profile-popup').classList.remove('hidden');
-    }
-    function closeProfilePopup() {
-        document.getElementById('profile-popup').classList.add('hidden');
-        document.getElementById('admin-email').value = '';
-        document.getElementById('admin-pass').value = '';
-    }
-
-    // ==== ADMIN ĐĂNG NHẬP ====
-    async function adminLogin() {
-        const email = document.getElementById('admin-email').value.trim().toLowerCase();
-        const pass = document.getElementById('admin-pass').value;
-        if (email === ADMIN_EMAIL) {
-            try {
-                await signInWithEmailAndPassword(window.auth, email, pass);
-                isAdmin = true;
-                alert('✅ Đăng nhập thành công!');
-                document.getElementById('admin-login-form').classList.add('hidden');
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                loadAdminShops();
-                updateStats();
-            } catch(e) {
-                alert('❌ Sai mật khẩu hoặc tài khoản chưa tồn tại!');
-            }
-        } else {
-            alert('❌ Email không phải quản trị viên!');
-        }
-    }
-
-    // ==== ADMIN ĐĂNG XUẤT ====
-    async function adminLogout() {
-        await signOut(window.auth);
-        isAdmin = false;
-        alert('✅ Đã đăng xuất!');
-        closeProfilePopup();
-    }
-
-    // ==== CẬP NHẬT THỐNG KÊ ====
-    function updateStats() {
-        document.getElementById('stat-total-phone').textContent = totalPhoneViews;
-        document.getElementById('stat-total-voucher').textContent = totalVoucherViews;
-    }
-
-    // ==== TẢI DANH SÁCH CỬA HÀNG ====
-    async function loadShops() {
-        try {
-            const cuaHangList = document.getElementById('cua-hang-list');
-            cuaHangList.innerHTML = '<p class="text-center text-gray-500 py-4">Đang tải...</p>';
-            const snapshot = await getDocs(collection(window.db, "shops"));
-            let shops = [];
-            snapshot.forEach(doc => {
-                shops.push({ id: doc.id, ...doc.data() });
-            });
-
-            if (currentFilterQuan !== "all") shops = shops.filter(s => s.quan === currentFilterQuan);
-            if (currentFilterPhuong !== "all") shops = shops.filter(s => s.phuong === currentFilterPhuong);
-
-            document.getElementById('total-shops').textContent = `(${shops.length} cửa hàng)`;
-
-            if (shops.length === 0) {
-                cuaHangList.innerHTML = '<p class="text-center text-gray-500 py-10">Chưa có cửa hàng nào trong khu vực này</p>';
-                return;
-            }
-
-            cuaHangList.innerHTML = '';
-            shops.forEach(shop => {
-                const div = document.createElement('div');
-                div.className = 'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden';
-                div.innerHTML = `
-                    <img src="${shop.image || 'https://picsum.photos/400/200'}" alt="${shop.name}" class="w-full h-40 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg text-blue-600">📱 ${shop.name}</h3>
-                        <p class="text-sm text-gray-500 mt-1">📍 ${shop.quan}, ${shop.phuong} — TPHCM</p>
-                        <p class="text-sm text-green-600 mt-1">✅ Có bảo hành tại cửa hàng</p>
-                        <p class="text-xs text-gray-400 mt-1">👁 Lượt xem: <span class="font-semibold text-gray-600">${shop.phoneViews || 0}</span></p>
-                        <div class="mt-3">
-                            <button class="w-full bg-blue-50 text-blue-600 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-100 transition" 
-                                onclick="showPhoneNumber('${shop.id}', '${shop.phone}')">
-                                📞 Xem số điện thoại
-                            </button>
-                        </div>
-                    </div>
-                `;
-                cuaHangList.appendChild(div);
-            });
-        } catch(e) {
-            document.getElementById('cua-hang-list').innerHTML = '<p class="text-center text-red-500 py-10">Lỗi tải dữ liệu!</p>';
-        }
-    }
-
-    // ==== ADMIN QUẢN LÝ CỬA HÀNG ====
-    async function loadAdminShops() {
-        const snapshot = await getDocs(collection(window.db, "shops"));
-        let shops = [];
-        snapshot.forEach(doc => shops.push({ id: doc.id, ...doc.data() }));
-        document.getElementById('stat-total-shops').textContent = shops.length;
-        
-        const list = document.getElementById('admin-shop-list');
-        list.innerHTML = '';
-        shops.forEach(shop => {
-            const div = document.createElement('div');
-            div.className = 'bg-gray-50 p-3 rounded-lg flex justify-between items-center';
-            div.innerHTML = `
-                <div class="flex-1">
-                    <p class="font-medium text-sm">${shop.name}</p>
-                    <p class="text-xs text-gray-500">${shop.quan} • ${shop.phoneViews || 0} lượt xem</p>
-                </div>
-                <div class="flex gap-1">
-                    <button onclick="editShop('${shop.id}')" class="text-blue-500 text-sm px-2">Sửa</button>
-                    <button onclick="deleteShop('${shop.id}')" class="text-red-500 text-sm px-2">Xóa</button>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    function showAddShopForm() {
-        document.getElementById('shop-form').classList.remove('hidden');
-        document.getElementById('shop-form-title').textContent = 'Thêm cửa hàng mới';
-        document.getElementById('shop-id').value = '';
-        document.getElementById('shop-name').value = '';
-        document.getElementById('shop-quan').value = '';
-        document.getElementById('shop-phuong').value = '';
-        document.getElementById('shop-address').value = '';
-        document.getElementById('shop-phone').value = '';
-        document.getElementById('shop-image').value = '';
-    }
-    function hideShopForm() {
-        document.getElementById('shop-form').classList.add('hidden');
-    }
-    async function editShop(shopId) {
-        const docSnap = await getDoc(doc(window.db, "shops", shopId));
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            document.getElementById('shop-form').classList.remove('hidden');
-            document.getElementById('shop-form-title').textContent = 'Sửa thông tin cửa hàng';
-            document.getElementById('shop-id').value = shopId;
-            document.getElementById('shop-name').value = data.name || '';
-            document.getElementById('shop-quan').value = data.quan || '';
-            document.getElementById('shop-phuong').value = data.phuong || '';
-            document.getElementById('shop-address').value = data.address || '';
-            document.getElementById('shop-phone').value = data.phone || '';
-            document.getElementById('shop-image').value = data.image || '';
-        }
-    }
-    async function saveShop() {
-        const id = document.getElementById('shop-id').value;
-        const name = document.getElementById('shop-name').value.trim();
-        const quan = document.getElementById('shop-quan').value;
-        const phuong = document.getElementById('shop-phuong').value.trim();
-        const address = document.getElementById('shop-address').value.trim();
-        const phone = document.getElementById('shop-phone').value.trim();
-        const image = document.getElementById('shop-image').value.trim();
-
-        if (!name || !quan || !phuong || !phone) {
-            alert('❌ Điền đầy đủ thông tin bắt buộc!');
-            return;
-        }
-
-        const shopData = {
-            name, quan, phuong, address, phone,
-            image: image || '',
-            phoneViews: 0,
-            createdAt: new Date()
-        };
-
-        try {
-            if (id) {
-                await updateDoc(doc(window.db, "shops", id), shopData);
-                alert('✅ Đã cập nhật cửa hàng!');
-            } else {
-                await addDoc(collection(window.db, "shops"), shopData);
-                alert('✅ Đã thêm cửa hàng mới!');
-            }
-            hideShopForm();
-            loadAdminShops();
-            loadShops();
-        } catch(e) {
-            alert('❌ Lỗi: ' + e.message);
-        }
-    }
-    async function deleteShop(shopId) {
-        if (!confirm('⚠️ Xóa vĩnh viễn cửa hàng này?')) return;
-        await deleteDoc(doc(window.db, "shops", shopId));
-        alert('✅ Đã xóa!');
-        loadAdminShops();
-        loadShops();
-    }
-
-    // ==== KIỂM TRA ĐĂNG NHẬP ====
-    onAuthStateChanged(window.auth, (user) => {
-        isAdmin = !!(user && user.email === ADMIN_EMAIL);
-    });
-
-    // ==== TÌM KIẾM ====
-    document.getElementById('search-input').addEventListener('input', loadShops);
-
-    // ==== KHỞI TẠO ====
+// ====== KHỞI TẠO ======
+document.addEventListener('DOMContentLoaded', () => {
+    renderDistrictChips();
+    populateDistrictSelect();
     loadShops();
+    setupSearch();
+});
+
+// ====== RENDER CHIP QUẬN ======
+function renderDistrictChips() {
+    const container = document.getElementById('districtChips');
+    container.innerHTML = '<button class="chip px-3 py-1.5 rounded-full text-sm bg-gray-200" data-district="all">Tất cả</button>';
+    districts.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'chip px-3 py-1.5 rounded-full text-sm bg-gray-200';
+        btn.dataset.district = d.name;
+        btn.textContent = d.name;
+        container.appendChild(btn);
+    });
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('chip')) selectDistrict(e.target.dataset.district);
+    });
+}
+
+// ====== CHỌN QUẬN ======
+function selectDistrict(districtName) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
+    document.querySelector(`[data-district="${districtName}"]`)?.classList.add('chip-active');
+    
+    if (districtName === 'all') {
+        selectedDistrict = null;
+        selectedWard = null;
+        document.getElementById('wardSection').classList.add('hidden');
+        loadShops();
+        return;
+    }
+    
+    selectedDistrict = districtName;
+    selectedWard = null;
+    renderWardList(districtName);
+    document.getElementById('wardSection').classList.remove('hidden');
+    loadShops();
+}
+
+// ====== RENDER DANH SÁCH PHƯỜNG ======
+function renderWardList(districtName) {
+    const dist = districts.find(d => d.name === districtName);
+    if (!dist) return;
+    const container = document.getElementById('wardList');
+    container.innerHTML = '';
+    dist.wards.forEach(w => {
+        const btn = document.createElement('button');
+        btn.className = 'phuong-item px-2 py-1.5 border rounded-lg text-sm';
+        btn.textContent = w.replace('Phường ', '');
+        btn.dataset.ward = w;
+        btn.onclick = () => selectWard(w, btn);
+        container.appendChild(btn);
+    });
+}
+
+// ====== CHỌN PHƯỜNG ======
+function selectWard(wardName, btn) {
+    document.querySelectorAll('.phuong-item').forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
+    btn.classList.add('bg-blue-500', 'text-white');
+    selectedWard = wardName;
+    loadShops();
+}
+
+// ====== TÌM KIẾM ======
+function setupSearch() {
+    document.getElementById('searchInput').addEventListener('input', loadShops);
+}
+
+// ====== LẤY DANH SÁCH CỬA HÀNG TỪ SUPABASE ======
+async function loadShops() {
+    let query = supabase.from('shops').select('*');
+    
+    if (selectedDistrict) query = query.eq('district', selectedDistrict);
+    if (selectedWard) query = query.eq('ward', selectedWard);
+    
+    const search = document.getElementById('searchInput').value.trim().toLowerCase();
+    const { data: shops, error } = await query.order('name', { ascending: true });
+    
+    if (error) { console.error(error); return; }
+    
+    const listEl = document.getElementById('shopList');
+    const emptyEl = document.getElementById('emptyMsg');
+    listEl.innerHTML = '';
+    
+    const filtered = search 
+        ? shops.filter(s => s.name.toLowerCase().includes(search) || s.address.toLowerCase().includes(search))
+        : shops;
+    
+    if (!filtered.length) {
+        emptyEl.classList.remove('hidden');
+        listEl.classList.add('hidden');
+        return;
+    }
+    emptyEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+    
+    filtered.forEach(shop => renderShopCard(shop, listEl));
+    
+    // Cập nhật thống kê
+    updateStats(shops?.length || 0);
+}
+
+// ====== RENDER THẺ CỬA HÀNG ======
+function renderShopCard(shop, container) {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-2xl shadow-sm p-4 border border-gray-100';
+    card.innerHTML = `
+        <div class="flex gap-3">
+            <img src="${shop.image_url || 'https://via.placeholder.com/100x100?text=📱'}" 
+                 alt="${shop.name}" class="w-24 h-24 object-cover rounded-xl">
+            <div class="flex-1">
+                <h3 class="font-bold text-base mb-1">${shop.name}</h3>
+                <p class="text-xs text-gray-500 mb-1">📍 ${shop.ward}, ${shop.district}</p>
+                <p class="text-xs text-gray-500 mb-2">${shop.address}</p>
+                <div class="flex items-center gap-2 mb-2">
+                    ${shop.warranty ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ Bảo hành</span>' : ''}
+                    <span class="text-xs text-gray-400">👁️ ${shop.phone_views || 0} lượt xem SĐT</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-3">
+            <button onclick="showPhone('${shop.id}', '${shop.name}', '${shop.phone}')" 
+                class="flex-1 bg-gray-100 text-gray-800 py-2.5 rounded-xl text-sm font-medium">📞 Xem SĐT</button>
+            <button onclick="showDiscountCode('${shop.id}')" 
+                class="flex-1 bg-green-600 text-white py-2.5 rounded-xl text-sm font-medium">🎁 Lấy mã giảm giá</button>
+        </div>
+        ${isAdmin ? `
+        <div class="flex gap-2 mt-2 pt-2 border-t">
+            <button onclick="editShop('${shop.id}')" class="flex-1 bg-amber-100 text-amber-700 py-2 rounded-lg text-sm">✏️ Sửa</button>
+            <button onclick="deleteShop('${shop.id}')" class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm">🗑️ Xóa</button>
+        </div>` : ''}
+    `;
+    container.appendChild(card);
+}
+
+// ====== XEM SỐ ĐIỆN THOẠI ======
+async function showPhone(shopId, name, phone) {
+    // Tăng lượt xem
+    await supabase.rpc('increment_phone_views', { shop_id: shopId });
+    document.getElementById('shopNamePhone').textContent = name;
+    document.getElementById('phoneNumber').textContent = phone;
+    document.getElementById('phoneModal').classList.remove('hidden');
+    loadShops();
+}
+function closePhoneModal() { document.getElementById('phoneModal').classList.add('hidden'); }
+
+// ====== LẤY MÃ GIẢM GIÁ ======
+async function showDiscountCode(shopId) {
+    // Tăng lượt lấy mã
+    await supabase.rpc('increment_discount_views', { shop_id: shopId });
+    // Tạo mã 6 ký tự ngẫu nhiên
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('discountCode').textContent = code;
+    document.getElementById('discountModal').classList.remove('hidden');
+    loadShops();
+}
+function closeDiscountModal() { document.getElementById('discountModal').classList.add('hidden'); }
+
+// ====== ĐĂNG NHẬP ADMIN ======
+document.getElementById('btnProfile').onclick = () => {
+    if (isAdmin) {
+        isAdmin = false;
+        document.getElementById('adminPanel').classList.add('hidden');
+        document.getElementById('shopListSection').classList.remove('hidden');
+        document.getElementById('btnProfile').textContent = 'Đăng nhập';
+    } else {
+        document.getElementById('loginModal').classList.remove('hidden');
+    }
+};
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
+async function adminLogin() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass = document.getElementById('adminPass').value;
+    
+    // Kiểm tra email cố định
+    if (email !== 'dangbahai3@gmail.com') {
+        alert('❌ Chỉ quản trị viên mới được đăng nhập!');
+        return;
+    }
+    
+    // Đăng nhập với Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+        alert('❌ ' + error.message);
+        return;
+    }
+    
+    isAdmin = true;
+    closeLoginModal();
+    document.getElementById('btnProfile').textContent = '🔑 Quản lý';
+    document.getElementById('shopListSection').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    loadAdminShops();
+}
+
+// ====== ADMIN: DANH SÁCH QUẬN ======
+function populateDistrictSelect() {
+    const sel = document.getElementById('shopDistrict');
+    sel.innerHTML = '<option value="">-- Chọn quận --</option>';
+    districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.name;
+        opt.textContent = d.name;
+        sel.appendChild(opt);
+    });
+    sel.onchange = () => {
+        const d = districts.find(x => x.name === sel.value);
+        const wardSel = document.getElementById('shopWard');
+        wardSel.innerHTML = '<option value="">-- Chọn phường --</option>';
+        d?.wards.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.textContent = w;
+            wardSel.appendChild(opt);
+        });
+    };
+}
+
+// ====== ADMIN: LƯU CỬA HÀNG ======
+async function saveShop() {
+    const payload = {
+        name: document.getElementById('shopName').value.trim(),
+        address: document.getElementById('shopAddress').value.trim(),
+        phone: document.getElementById('shopPhone').value.trim(),
+        district: document.getElementById('shopDistrict').value,
+        ward: document.getElementById('shopWard').value,
+        image_url: document.getElementById('shopImage').value.trim(),
+        warranty: document.getElementById('shopWarranty').checked,
+        phone_views: 0,
+        discount_views: 0
+    };
+    
+    if (!payload.name || !payload.district || !payload.ward) {
+        alert('❌ Điền tên, quận và phường!');
+        return;
+    }
+    
+    let res;
+    if (editingShopId) {
+        res = await supabase.from('shops').update(payload).eq('id', editingShopId);
+        editingShopId = null;
+    } else {
+        res = await supabase.from('shops').insert(payload);
+    }
+    
+    if (res.error) { alert('❌ ' + res.error.message); return; }
+    alert('✅ Lưu thành công!');
+    clearForm();
+    loadShops();
+    loadAdminShops();
+}
+
+function clearForm() {
+    document.getElementById('shopName').value = '';
+    document.getElementById('shopAddress').value = '';
+    document.getElementById('shopPhone').value = '';
+    document.getElementById('shopDistrict').value = '';
+    document.getElementById('shopWard').innerHTML = '<option value="">-- Chọn phường --</option>';
+    document.getElementById('shopImage').value = '';
+    document.getElementById('shopWarranty').checked = false;
+}
+
+// ====== ADMIN: DANH SÁCH QUẢN LÝ ======
+async function loadAdminShops() {
+    const { data } = await supabase.from('shops').select('*').order('name');
+    const list = document.getElementById('adminShopList');
+    list.innerHTML = '';
+    (data || []).forEach(s => {
+        list.innerHTML += `
+            <div class="border p-3 rounded-lg flex justify-between items-center">
+                <div>
+                    <p class="font-medium">${s.name}</p>
+                    <p class="text-xs text-gray-500">${s.ward}, ${s.district}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="editShop('${s.id}')" class="text-blue-500 text-sm">Sửa</button>
+                    <button onclick="deleteShop('${s.id}')" class="text-red-500 text-sm">Xóa</button>
+                </div>
+            </div>
+        `;
+    });
+    document.getElementById('totalShops').textContent = data?.length || 0;
+}
+
+async function editShop(id) {
+    editingShopId = id;
+    const { data } = await supabase.from('shops').select('*').eq('id', id).single();
+    if (!data) return;
+    document.getElementById('shopName').value = data.name;
+    document.getElementById('shopAddress').value = data.address || '';
+    document.getElementById('shopPhone').value = data.phone || '';
+    document.getElementById('shopDistrict').value = data.district;
+    // Tải phường tương ứng
+    const dist = districts.find(d => d.name === data.district);
+    const wardSel = document.getElementById('shopWard');
+    wardSel.innerHTML = '<option value="">-- Chọn phường --</option>';
+    dist?.wards.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = w;
+        opt.selected = w === data.ward;
+        wardSel.appendChild(opt);
+    });
+    document.getElementById('shopImage').value = data.image_url || '';
+    document.getElementById('shopWarranty').checked = data.warranty || false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function deleteShop(id) {
+    if (!confirm('Xóa cửa hàng này?')) return;
+    await supabase.from('shops').delete().eq('id', id);
+    loadShops();
+    loadAdminShops();
+}
+
+// ====== CẬP NHẬT THỐNG KÊ ======
+function updateStats(total) {
+    document.getElementById('totalShops').textContent = total;
+}
 </script>
 
 </body>
